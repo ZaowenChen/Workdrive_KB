@@ -1,0 +1,3 @@
+- Store refresh tokens in a secret manager when possible; `.env` is for local dev only.
+- Limit scopes to the endpoints used (files.read/update, teamfolders.read, dataTemplates.*).
+- Audit table records every metadata change with timestamp and actor.
