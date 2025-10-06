@@ -1,0 +1,30 @@
+template:
+  name: "Cobotiq Document Metadata"
+  description: "Standard metadata for SOP/PCN/Release/Manuals"
+  fields:
+    - { label: "Document Type", type: picklist, required: true,
+        options: ["SOP","PCN","Release Note","Troubleshooting Guide","Manual","Specification","Checklist"] }
+    - { label: "Audience", type: picklist, required: true,
+        options: ["User","FAE","Internal","Dealer","QA"] }
+    - { label: "Priority", type: picklist, required: false,
+        options: ["High","Medium","Low"], default_value: "Medium" }
+    - { label: "Robot Model", type: picklist, required: false,
+        options: ["S50","V40","Scrubber75","S1","Workstation"] }
+    - { label: "Subsystem", type: picklist, required: false,
+        options: ["Laser","Software","Battery","Drive","Pump","UI","Network","Other"] }
+    - { label: "Software Version", type: text, required: false }
+    - { label: "Hardware Version", type: text, required: false }
+    - { label: "Language", type: picklist, required: false,
+        options: ["English","Chinese","Spanish","Other"] }
+
+classification:
+  # fields → candidate values (for LLM)
+  candidate_values:
+    doc_type: ["SOP","PCN","Release Note","Troubleshooting Guide","Manual","Specification","Checklist"]
+    model_type: ["S50","V40","Scrubber75","S1","Workstation",""]
+    subsystem: ["Laser","Software","Battery","Drive","Pump","UI","Network","Other",""]
+    language: ["English","Chinese","Spanish","Other",""]
+  llm:
+    model: "gpt-4o-mini"
+    temperature: 0
+    max_tokens: 120

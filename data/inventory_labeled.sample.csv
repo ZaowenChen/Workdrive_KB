@@ -1,0 +1,2 @@
+file_id,path,name,size,modified_time,doc_type,model_type,subsystem,language,source,needs_review
+sample-file-id,TeamFolder/Manuals/manual1.pdf,manual1.pdf,123456,2024-01-01T00:00:00Z,Manual,S50,Software,English,heuristic,1

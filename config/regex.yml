@@ -1,0 +1,15 @@
+doc_type:
+  SOP: "\\bSOP\\b"
+  PCN: "\\bPCN\\b"
+  Release Note: "release[ _-]?note"
+  Troubleshooting Guide: "troubleshooting"
+  Manual: "\\b(manual|instruction|guide)\\b"
+  Specification: "\\b(specification|spec[- ]sheet|technical spec)\\b"
+  Checklist: "\\bchecklist\\b"
+
+model_type:
+  S50: "\\b(Scrubber\\s*50|GS50|SC50|S50)\\b"
+  V40: "\\b(Vacuum\\s*40|GS40|GV40|V40)\\b"
+  Scrubber75: "\\bScrubber\\s*75\\b"
+  S1: "\\b(S1|Phantas)\\b"
+  Workstation: "\\b(Workstation|WS\\d+)\\b"

@@ -1,0 +1,6 @@
+{
+  "doc_type": ["SOP", "PCN", "Release Note", "Troubleshooting Guide", "Manual", "Specification", "Checklist"],
+  "model_type": ["S50", "V40", "Scrubber75", "S1", "Workstation", ""],
+  "subsystem": ["Laser", "Software", "Battery", "Drive", "Pump", "UI", "Network", "Other", ""],
+  "language": ["English", "Chinese", "Spanish", "Other", ""]
+}
