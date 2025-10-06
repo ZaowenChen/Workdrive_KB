@@ -4,26 +4,32 @@ template:
   fields:
     - { label: "Document Type", type: picklist, required: true,
         options: ["SOP","PCN","Release Note","Troubleshooting Guide","Manual","Specification","Checklist"] }
-    - { label: "Audience", type: picklist, required: true,
-        options: ["User","FAE","Internal","Dealer","QA"] }
+    - { label: "Audience Level", type: picklist, required: true,
+        options: ["intro","operator","technician","engineer","admin"], default_value: "operator" }
     - { label: "Priority", type: picklist, required: false,
-        options: ["High","Medium","Low"], default_value: "Medium" }
+        options: ["high","normal","low"], default_value: "normal" }
     - { label: "Robot Model", type: picklist, required: false,
-        options: ["S50","V40","Scrubber75","S1","Workstation"] }
+        options: ["S50","V40","Scrubber75","S1","Workstation","S50 & V40","(Beetle) SW","Genric"] }
     - { label: "Subsystem", type: picklist, required: false,
         options: ["Laser","Software","Battery","Drive","Pump","UI","Network","Other"] }
-    - { label: "Software Version", type: text, required: false }
-    - { label: "Hardware Version", type: text, required: false }
+    - { label: "Software Version", type: picklist, required: false,
+        options: ["AIO1","AIO2","AIO3","AIO4","AIO5","M Series"] }
+    - { label: "Hardware Version", type: picklist, required: false,
+        options: ["4.2","4.1","3.7","3.6","1.6","1.5","1.4.5","1.4","1.3","1.2","1.1","1.0","2.2.3"] }
     - { label: "Language", type: picklist, required: false,
         options: ["English","Chinese","Spanish","Other"] }
 
 classification:
   # fields → candidate values (for LLM)
   candidate_values:
-    doc_type: ["SOP","PCN","Release Note","Troubleshooting Guide","Manual","Specification","Checklist"]
-    model_type: ["S50","V40","Scrubber75","S1","Workstation",""]
+    doc_type: ["SOP","PCN","Release Note","Troubleshooting Guide","Manual","Specification","Checklist",""]
+    model_type: ["S50","V40","Scrubber75","S1","Workstation","S50 & V40","(Beetle) SW","Genric",""]
     subsystem: ["Laser","Software","Battery","Drive","Pump","UI","Network","Other",""]
     language: ["English","Chinese","Spanish","Other",""]
+    hardware_version: ["4.2","4.1","3.7","3.6","1.6","1.5","1.4.5","1.4","1.3","1.2","1.1","1.0","2.2.3",""]
+    software_version: ["AIO1","AIO2","AIO3","AIO4","AIO5","M Series",""]
+    priority: ["high","normal","low",""]
+    audience_level: ["intro","operator","technician","engineer","admin",""]
   llm:
     model: "gpt-4o-mini"
     temperature: 0

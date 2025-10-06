@@ -19,7 +19,7 @@ classify:
 	$(PY_RUN) scripts/cli.py classify llm
 
 review:
-	streamlit run src/apps/streamlit_app.py
+	$(PY_RUN) -m streamlit run src/apps/streamlit_app.py
 
 sync:
 	$(PY_RUN) scripts/cli.py sync

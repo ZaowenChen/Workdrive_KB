@@ -23,9 +23,10 @@ def _call_llm(filename: str, excerpt: str, candidates: Dict[str, list]) -> Dict[
     settings = load_settings()
     llm_settings = settings["classification"]["llm"]
 
+    fields = ", ".join(candidates.keys())
     system_prompt = (
         "You classify documents. Given a filename and excerpt, choose exactly one value "
-        "for each field (doc_type, model_type, subsystem, language) using only candidate_values. "
+        f"for each field ({fields}) using only candidate_values. "
         "Return strict JSON with those keys."
     )
     user_prompt = (

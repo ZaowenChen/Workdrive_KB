@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS documents (
   created_time TEXT,
   modified_time TEXT,
   suffix TEXT,
+  permalink TEXT,
+  download_url TEXT,
   sha256 TEXT,
   excerpt TEXT,
   last_seen TEXT DEFAULT (datetime('now'))
@@ -19,6 +21,10 @@ CREATE TABLE IF NOT EXISTS labels (
   model_type TEXT,
   subsystem TEXT,
   language TEXT,
+  hardware_version TEXT,
+  software_version TEXT,
+  priority TEXT,
+  audience_level TEXT,
   source TEXT,        -- heuristic | llm | human
   confidence REAL,    -- 0..1
   needs_review INTEGER DEFAULT 1,

@@ -14,6 +14,10 @@ def push_to_workdrive() -> None:
             "Robot Model": row["model_type"],
             "Subsystem": row["subsystem"],
             "Language": row["language"],
+            "Hardware Version": row["hardware_version"],
+            "Software Version": row["software_version"],
+            "Priority": row["priority"],
+            "Audience Level": row["audience_level"],
         }
         update_values(row["file_id"], template_id, payload)
         save_audit_change(row["file_id"], "sync", "", json.dumps(payload), actor="pipeline")

@@ -22,7 +22,8 @@ cp .env.example .env
 
 2. **Configure**
 
-* Fill `.env` with Zoho OAuth Client ID/Secret and **refresh token**, your **teamfolder id**, and (optional) `OPENAI_API_KEY`.
+* Fill `.env` with Zoho OAuth Client ID/Secret and **refresh token**, your **WorkDrive org id**, your **teamfolder id**, and (optional) `OPENAI_API_KEY`.
+* Point `WORKDRIVE_API_BASE` at your custom domain if you use one (e.g. `https://workdrive.<company>.com/api/v1`), set `WORKDRIVE_APP_BASE` to the matching browser URL (e.g. `https://workdrive.<company>.com`) for quick links, and set `WORKDRIVE_ROOT_FOLDER_ID` to the folder id found after `/folders/` in the WorkDrive URL when you want to scope the crawl.
 * Edit `config/settings.yaml` to adjust picklists (doc_type, model, etc.) and template name.
 * Edit `config/regex.yml` for heuristic patterns.
 
@@ -87,10 +88,10 @@ workdrive-cli run all              # end-to-end (safe default flow)
 
 * OCR for scanned PDFs is **not** included by default. If needed, enable Tesseract and plug it into `extraction/extract.py` (hook provided).
 * Legacy `.doc` requires conversion (LibreOffice headless). A hook is provided; set `ENABLE_DOC_CONVERSION` in `.env`.
+* To shorten extraction time on large PDFs, tune `EXCERPT_PDF_MAX_PAGES` (default `0` = no limit). PowerPoint `.pptx` slides are extracted via `python-pptx`.
 
 ## License
 
 MIT (or your preferred license)
 
 ```
-
