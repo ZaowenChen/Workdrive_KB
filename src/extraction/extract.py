@@ -5,7 +5,11 @@ import os
 import pandas as pd
 from docx import Document
 from pdfminer.high_level import extract_text as pdf_extract_text
-from pptx import Presentation  # requires: pip install python-pptx
+
+try:
+    from pptx import Presentation  # optional: pip install python-pptx
+except ImportError:
+    Presentation = None
 
 from src.db import iter_documents_without_excerpt, store_excerpt
 from src.workdrive.api import download_file_bytes
@@ -39,6 +43,8 @@ def _extract_content(data: bytes, suffix: str) -> str:
             return df.to_csv(sep=" ", index=False)[:EXCERPT_MAX]
 
         if extension == ".pptx":
+            if Presentation is None:
+                return ""
             presentation = Presentation(buffer)
             text_runs = []
             for slide in presentation.slides:
@@ -62,3 +68,4 @@ def run_extraction() -> None:
         excerpt = _extract_content(content, document.get("suffix", ".pdf"))
         sha256 = hashlib.sha256(content).hexdigest()
         store_excerpt(rid, excerpt, sha256)
+
