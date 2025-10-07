@@ -18,16 +18,22 @@ CREATE TABLE IF NOT EXISTS documents (
 CREATE TABLE IF NOT EXISTS labels (
   file_id TEXT PRIMARY KEY,
   doc_type TEXT,
-  model_type TEXT,
-  subsystem TEXT,
-  language TEXT,
-  hardware_version TEXT,
+  product_line TEXT,
+  model TEXT,
   software_version TEXT,
-  priority TEXT,
-  audience_level TEXT,
+  software_version_other TEXT,
+  hardware_version TEXT,
+  hardware_version_other TEXT,
+  subsystem TEXT,
+  audience TEXT,
+  priority TEXT DEFAULT 'Medium',
+  lifecycle TEXT DEFAULT 'Active',
+  confidentiality TEXT DEFAULT 'Internal',
+  keywords TEXT,
   source TEXT,        -- heuristic | llm | human
   confidence REAL,    -- 0..1
   needs_review INTEGER DEFAULT 1,
+  updated_at TEXT DEFAULT (datetime('now')),
   FOREIGN KEY(file_id) REFERENCES documents(file_id)
 );
 

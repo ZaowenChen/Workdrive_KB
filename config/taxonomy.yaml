@@ -1,0 +1,78 @@
+doc_type:
+  - SOP
+  - PCN
+  - Release Notes
+  - TIP
+  - Manual
+  - Spec
+  - Checklist
+  - Policy
+  - Form
+  - Training
+  - Drawing
+  - Other
+
+product_line:
+  - Gaussian
+  - Pudu
+  - Cobotiq
+  - Third-Party
+
+model:
+  Gaussian: [S50, V40, S1, Beetle, Other]
+  Pudu: [CC1, SH1, Other]
+  Cobotiq: [Integration, Ops Tools, Data Pipeline, Other]
+  Third-Party: [N/A, Other]
+
+software_version:
+  series:
+    M: [M7, M8, M9, M10]
+    AIO: ["AIO 1.3", "AIO 1.4", "AIO 1.5"]
+    generic: ["1.2", "1.3", "1.4", "1.5", "2.0"]
+  allow_other: true
+
+hardware_version:
+  global: ["Other"]
+  model_specific:
+    S50: ["4.2", "4.1", "3.7", "3.6"]
+    V40: ["1.6", "1.5", "1.4.5", "1.4", "1.3"]
+  allow_other_text: true
+
+subsystem:
+  - Navigation/SLAM
+  - Localization
+  - Perception/LiDAR
+  - Actuation/Brush
+  - Battery/Power
+  - Charging/Dock
+  - Networking/4G
+  - HMI/UX
+  - Cloud/ETL
+  - Safety
+  - Chassis/Mechanical
+  - Firmware
+  - Other
+
+audience:
+  - Operator
+  - Technician
+  - Engineer
+  - Manager/Customer
+
+priority:
+  - Critical
+  - High
+  - Medium
+  - Low
+
+lifecycle:
+  - Draft
+  - Active
+  - Superseded
+  - Deprecated
+  - Archived
+
+confidentiality:
+  - Public
+  - Internal
+  - Restricted

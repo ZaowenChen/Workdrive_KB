@@ -1,36 +1,73 @@
 template:
   name: "Cobotiq Document Metadata"
-  description: "Standard metadata for SOP/PCN/Release/Manuals"
+  description: "Standard metadata for Cobotiq robotics knowledge base"
   fields:
-    - { label: "Document Type", type: picklist, required: true,
-        options: ["SOP","PCN","Release Note","Troubleshooting Guide","Manual","Specification","Checklist"] }
-    - { label: "Audience Level", type: picklist, required: true,
-        options: ["intro","operator","technician","engineer","admin"], default_value: "operator" }
-    - { label: "Priority", type: picklist, required: false,
-        options: ["high","normal","low"], default_value: "normal" }
-    - { label: "Robot Model", type: picklist, required: false,
-        options: ["S50","V40","Scrubber75","S1","Workstation","S50 & V40","(Beetle) SW","Genric"] }
-    - { label: "Subsystem", type: picklist, required: false,
-        options: ["Laser","Software","Battery","Drive","Pump","UI","Network","Other"] }
-    - { label: "Software Version", type: picklist, required: false,
-        options: ["AIO1","AIO2","AIO3","AIO4","AIO5","M Series"] }
-    - { label: "Hardware Version", type: picklist, required: false,
-        options: ["4.2","4.1","3.7","3.6","1.6","1.5","1.4.5","1.4","1.3","1.2","1.1","1.0","2.2.3"] }
-    - { label: "Language", type: picklist, required: false,
-        options: ["English","Chinese","Spanish","Other"] }
+    - label: "Doc Type"
+      type: picklist
+      required: true
+      options_from: doc_type
+    - label: "Product Line"
+      type: picklist
+      required: true
+      options_from: product_line
+    - label: "Model"
+      type: picklist
+      required: true
+      options_from: model
+    - label: "Software Version"
+      type: picklist
+      required: true
+      options_from: software_version
+    - label: "Software Version (Other)"
+      type: text
+      required_when: { field: "Software Version", equals: "Other" }
+    - label: "Hardware Version"
+      type: picklist
+      required: true
+      options_from: hardware_version
+    - label: "Hardware Version (Other)"
+      type: text
+      required_when: { field: "Hardware Version", equals: "Other" }
+    - label: "Subsystem"
+      type: picklist
+      required: true
+      options_from: subsystem
+    - label: "Audience"
+      type: picklist
+      required: true
+      options_from: audience
+    - label: "Priority"
+      type: picklist
+      required: true
+      options_from: priority
+      default_value: "Medium"
+    - label: "Lifecycle"
+      type: picklist
+      required: true
+      options_from: lifecycle
+      default_value: "Active"
+    - label: "Confidentiality"
+      type: picklist
+      required: true
+      options_from: confidentiality
+      default_value: "Internal"
+    - label: "Keywords"
+      type: text
+      required_when: { field: "Doc Type", equals: "Other" }
 
 classification:
-  # fields → candidate values (for LLM)
   candidate_values:
-    doc_type: ["SOP","PCN","Release Note","Troubleshooting Guide","Manual","Specification","Checklist",""]
-    model_type: ["S50","V40","Scrubber75","S1","Workstation","S50 & V40","(Beetle) SW","Genric",""]
-    subsystem: ["Laser","Software","Battery","Drive","Pump","UI","Network","Other",""]
-    language: ["English","Chinese","Spanish","Other",""]
-    hardware_version: ["4.2","4.1","3.7","3.6","1.6","1.5","1.4.5","1.4","1.3","1.2","1.1","1.0","2.2.3",""]
-    software_version: ["AIO1","AIO2","AIO3","AIO4","AIO5","M Series",""]
-    priority: ["high","normal","low",""]
-    audience_level: ["intro","operator","technician","engineer","admin",""]
+    doc_type: ["SOP","PCN","Release Notes","TIP","Manual","Spec","Checklist","Policy","Form","Training","Drawing","Other",""]
+    product_line: ["Gaussian","Pudu","Cobotiq","Third-Party",""]
+    model: ["S50","V40","S1","Beetle","CC1","SH1","Integration","Ops Tools","Data Pipeline","N/A","Other",""]
+    software_version: ["M7","M8","M9","M10","AIO 1.3","AIO 1.4","AIO 1.5","1.2","1.3","1.4","1.5","2.0","Other",""]
+    hardware_version: ["Rev A","Rev B","Rev C","Mainboard v2","Sensor Pkg v1","Other",""]
+    subsystem: ["Navigation/SLAM","Localization","Perception/LiDAR","Actuation/Brush","Battery/Power","Charging/Dock","Networking/4G","HMI/UX","Cloud/ETL","Safety","Chassis/Mechanical","Firmware","Other",""]
+    audience: ["Operator","Technician","Engineer","Manager/Customer",""]
+    priority: ["Critical","High","Medium","Low",""]
+    lifecycle: ["Draft","Active","Superseded","Deprecated","Archived",""]
+    confidentiality: ["Public","Internal","Restricted",""]
   llm:
     model: "gpt-4o-mini"
     temperature: 0
-    max_tokens: 120
+    max_tokens: 200

@@ -24,8 +24,9 @@ cp .env.example .env
 
 * Fill `.env` with Zoho OAuth Client ID/Secret and **refresh token**, your **WorkDrive org id**, your **teamfolder id**, and (optional) `OPENAI_API_KEY`.
 * Point `WORKDRIVE_API_BASE` at your custom domain if you use one (e.g. `https://workdrive.<company>.com/api/v1`), set `WORKDRIVE_APP_BASE` to the matching browser URL (e.g. `https://workdrive.<company>.com`) for quick links, and set `WORKDRIVE_ROOT_FOLDER_ID` to the folder id found after `/folders/` in the WorkDrive URL when you want to scope the crawl.
-* Edit `config/settings.yaml` to adjust picklists (doc_type, model, etc.) and template name.
-* Edit `config/regex.yml` for heuristic patterns.
+* Tune metadata taxonomies in `config/taxonomy.yaml` (Doc Type, Product Line, Models, Software/Hardware versions, etc.). These values drive the Streamlit review UI, CSV exports, and WorkDrive Data Template fields.
+* Edit `config/settings.yaml` only if you need to change the WorkDrive Data Template name/description or adjust LLM options. Picklist contents now resolve automatically from `taxonomy.yaml`.
+* Edit `config/regex.yml` for heuristic pre-label patterns.
 
 3. **Initialize DB**
 
@@ -89,6 +90,7 @@ workdrive-cli run all              # end-to-end (safe default flow)
 * OCR for scanned PDFs is **not** included by default. If needed, enable Tesseract and plug it into `extraction/extract.py` (hook provided).
 * Legacy `.doc` requires conversion (LibreOffice headless). A hook is provided; set `ENABLE_DOC_CONVERSION` in `.env`.
 * To shorten extraction time on large PDFs, tune `EXCERPT_PDF_MAX_PAGES` (default `0` = no limit). PowerPoint `.pptx` slides are extracted via `python-pptx`.
+* Streamlit review enforces the Cobotiq labeling spec: Doc Type → Product Line → Model → Software/Hardware versions (with “Other” text boxes) → Subsystem → Audience → Priority → Lifecycle → Confidentiality → Keywords. Keywords become mandatory when Doc Type is **Other**.
 
 ## License
 

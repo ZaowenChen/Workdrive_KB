@@ -10,14 +10,19 @@ def push_to_workdrive() -> None:
     template_id = ensure_template(settings)
     for row in iter_for_sync():
         payload = {
-            "Document Type": row["doc_type"],
-            "Robot Model": row["model_type"],
-            "Subsystem": row["subsystem"],
-            "Language": row["language"],
-            "Hardware Version": row["hardware_version"],
+            "Doc Type": row["doc_type"],
+            "Product Line": row["product_line"],
+            "Model": row["model"],
             "Software Version": row["software_version"],
+            "Software Version (Other)": row["software_version_other"],
+            "Hardware Version": row["hardware_version"],
+            "Hardware Version (Other)": row["hardware_version_other"],
+            "Subsystem": row["subsystem"],
+            "Audience": row["audience"],
             "Priority": row["priority"],
-            "Audience Level": row["audience_level"],
+            "Lifecycle": row["lifecycle"],
+            "Confidentiality": row["confidentiality"],
+            "Keywords": row["keywords"],
         }
         update_values(row["file_id"], template_id, payload)
         save_audit_change(row["file_id"], "sync", "", json.dumps(payload), actor="pipeline")

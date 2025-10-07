@@ -1,10 +1,31 @@
 import os
 import sqlite3
 import pathlib
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Optional
 
 DB_PATH = os.getenv("DB_PATH", "data/workdrive.db")
 _SCHEMA_ENSURED = False
+_LABEL_COLUMNS = (
+    "doc_type",
+    "product_line",
+    "model",
+    "software_version",
+    "software_version_other",
+    "hardware_version",
+    "hardware_version_other",
+    "subsystem",
+    "audience",
+    "priority",
+    "lifecycle",
+    "confidentiality",
+    "keywords",
+)
+
+_DEFAULTS = {
+    "priority": "Medium",
+    "lifecycle": "Active",
+    "confidentiality": "Internal",
+}
 
 
 def _conn():
@@ -41,11 +62,61 @@ def _ensure_schema(conn) -> None:
         return
     _ensure_column(conn, "documents", "permalink", "TEXT")
     _ensure_column(conn, "documents", "download_url", "TEXT")
-    _ensure_column(conn, "labels", "hardware_version", "TEXT")
+    _ensure_column(conn, "labels", "doc_type", "TEXT")
+    _ensure_column(conn, "labels", "product_line", "TEXT")
+    _ensure_column(conn, "labels", "model", "TEXT")
     _ensure_column(conn, "labels", "software_version", "TEXT")
+    _ensure_column(conn, "labels", "software_version_other", "TEXT")
+    _ensure_column(conn, "labels", "hardware_version", "TEXT")
+    _ensure_column(conn, "labels", "hardware_version_other", "TEXT")
+    _ensure_column(conn, "labels", "subsystem", "TEXT")
+    _ensure_column(conn, "labels", "audience", "TEXT")
     _ensure_column(conn, "labels", "priority", "TEXT")
-    _ensure_column(conn, "labels", "audience_level", "TEXT")
+    _ensure_column(conn, "labels", "lifecycle", "TEXT")
+    _ensure_column(conn, "labels", "confidentiality", "TEXT")
+    _ensure_column(conn, "labels", "keywords", "TEXT")
+    _ensure_column(conn, "labels", "source", "TEXT")
+    _ensure_column(conn, "labels", "confidence", "REAL")
+    _ensure_column(conn, "labels", "needs_review", "INTEGER DEFAULT 1")
+    _ensure_column(conn, "labels", "updated_at", "TEXT")
     _SCHEMA_ENSURED = True
+
+
+def _clean(value: Optional[str]) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    return str(value).strip()
+
+
+def _prepare_labels(payload: Dict) -> Dict:
+    data = {field: _clean(payload.get(field)) for field in _LABEL_COLUMNS}
+
+    for key, default in _DEFAULTS.items():
+        if not data[key]:
+            data[key] = default
+
+    if data["keywords"]:
+        normalized_keywords = []
+        seen = set()
+        for part in data["keywords"].split(","):
+            cleaned = part.strip().lower()
+            if not cleaned:
+                continue
+            if cleaned not in seen:
+                seen.add(cleaned)
+                normalized_keywords.append(cleaned)
+        data["keywords"] = ", ".join(normalized_keywords)
+
+    if data["software_version"] == "Other" and not data["software_version_other"]:
+        raise ValueError("software_version_other is required when software_version is Other")
+    if data["hardware_version"] == "Other" and not data["hardware_version_other"]:
+        raise ValueError("hardware_version_other is required when hardware_version is Other")
+    if data["doc_type"] == "Other" and not data["keywords"]:
+        raise ValueError("keywords are required when doc_type is Other")
+
+    return data
 
 
 def upsert_document(row: Dict):
@@ -121,30 +192,52 @@ def iter_documents_for_heuristics() -> Iterable[Dict]:
 def upsert_labels(file_id: str, labels: Dict, source: str, confidence: float, needs_review: int):
     with _conn() as conn:
         _ensure_schema(conn)
+        data = _prepare_labels(labels)
         conn.execute(
             """
-            INSERT INTO labels(file_id,doc_type,model_type,subsystem,language,hardware_version,software_version,priority,audience_level,source,confidence,needs_review)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            INSERT INTO labels(
+                file_id, doc_type, product_line, model,
+                software_version, software_version_other,
+                hardware_version, hardware_version_other,
+                subsystem, audience, priority, lifecycle,
+                confidentiality, keywords, source, confidence,
+                needs_review, updated_at
+            )
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
             ON CONFLICT(file_id) DO UPDATE SET
-              doc_type=excluded.doc_type, model_type=excluded.model_type,
-              subsystem=excluded.subsystem, language=excluded.language,
-              hardware_version=excluded.hardware_version,
+              doc_type=excluded.doc_type,
+              product_line=excluded.product_line,
+              model=excluded.model,
               software_version=excluded.software_version,
+              software_version_other=excluded.software_version_other,
+              hardware_version=excluded.hardware_version,
+              hardware_version_other=excluded.hardware_version_other,
+              subsystem=excluded.subsystem,
+              audience=excluded.audience,
               priority=excluded.priority,
-              audience_level=excluded.audience_level,
-              source=excluded.source, confidence=excluded.confidence,
-              needs_review=excluded.needs_review
+              lifecycle=excluded.lifecycle,
+              confidentiality=excluded.confidentiality,
+              keywords=excluded.keywords,
+              source=excluded.source,
+              confidence=excluded.confidence,
+              needs_review=excluded.needs_review,
+              updated_at=datetime('now')
             """,
             (
                 file_id,
-                labels.get("doc_type", ""),
-                labels.get("model_type", ""),
-                labels.get("subsystem", ""),
-                labels.get("language", ""),
-                labels.get("hardware_version", ""),
-                labels.get("software_version", ""),
-                labels.get("priority", ""),
-                labels.get("audience_level", ""),
+                data["doc_type"],
+                data["product_line"],
+                data["model"],
+                data["software_version"],
+                data["software_version_other"],
+                data["hardware_version"],
+                data["hardware_version_other"],
+                data["subsystem"],
+                data["audience"],
+                data["priority"],
+                data["lifecycle"],
+                data["confidentiality"],
+                data["keywords"],
                 source,
                 confidence,
                 needs_review,
@@ -156,9 +249,14 @@ def iter_needs_llm() -> Iterable[Dict]:
     with _conn() as conn:
         _ensure_schema(conn)
         query = """
-        SELECT d.file_id, d.name, d.excerpt, l.doc_type, l.model_type
+        SELECT d.file_id, d.name, d.excerpt, l.doc_type, l.product_line, l.model
         FROM documents d JOIN labels l ON l.file_id=d.file_id
-        WHERE l.source='heuristic' AND (l.doc_type='' OR l.model_type='' OR l.confidence < 0.8)
+        WHERE l.source='heuristic' AND (
+            l.doc_type IS NULL OR l.doc_type='' OR
+            l.product_line IS NULL OR l.product_line='' OR
+            l.model IS NULL OR l.model='' OR
+            l.confidence < 0.8
+        )
         """
         for row in conn.execute(query):
             yield dict(file_id=row[0], name=row[1], excerpt=row[2])
@@ -168,8 +266,11 @@ def iter_for_sync() -> Iterable[Dict]:
     with _conn() as conn:
         _ensure_schema(conn)
         query = """
-        SELECT d.file_id, d.name, l.doc_type, l.model_type, l.subsystem, l.language,
-               l.hardware_version, l.software_version, l.priority, l.audience_level
+        SELECT d.file_id, d.name, l.doc_type, l.product_line, l.model,
+               l.software_version, l.software_version_other,
+               l.hardware_version, l.hardware_version_other,
+               l.subsystem, l.audience, l.priority,
+               l.lifecycle, l.confidentiality, l.keywords
         FROM documents d JOIN labels l ON l.file_id=d.file_id
         WHERE l.needs_review=0
         """
@@ -178,13 +279,18 @@ def iter_for_sync() -> Iterable[Dict]:
                 file_id=row[0],
                 name=row[1],
                 doc_type=row[2],
-                model_type=row[3],
-                subsystem=row[4],
-                language=row[5],
-                hardware_version=row[6],
-                software_version=row[7],
-                priority=row[8],
-                audience_level=row[9],
+                product_line=row[3],
+                model=row[4],
+                software_version=row[5],
+                software_version_other=row[6],
+                hardware_version=row[7],
+                hardware_version_other=row[8],
+                subsystem=row[9],
+                audience=row[10],
+                priority=row[11],
+                lifecycle=row[12],
+                confidentiality=row[13],
+                keywords=row[14],
             )
 
 
@@ -203,9 +309,12 @@ def all_for_csv():
         query = """
         SELECT d.file_id, d.path, d.name, d.size, d.modified_time,
                d.permalink, d.download_url, d.excerpt,
-               l.doc_type, l.model_type, l.subsystem, l.language,
-               l.hardware_version, l.software_version, l.priority, l.audience_level,
-               l.source, l.needs_review
+               l.doc_type, l.product_line, l.model,
+               l.software_version, l.software_version_other,
+               l.hardware_version, l.hardware_version_other,
+               l.subsystem, l.audience, l.priority,
+               l.lifecycle, l.confidentiality, l.keywords,
+               l.source, l.needs_review, l.updated_at
         FROM documents d LEFT JOIN labels l ON l.file_id=d.file_id
         ORDER BY d.path
         """
@@ -218,23 +327,32 @@ def all_for_csv():
 def update_from_csv_row(row: Dict):
     with _conn() as conn:
         _ensure_schema(conn)
+        data = _prepare_labels(row)
         conn.execute(
             """
             UPDATE labels
-            SET doc_type=?, model_type=?, subsystem=?, language=?,
-                hardware_version=?, software_version=?, priority=?, audience_level=?,
-                source=?, needs_review=?
+            SET doc_type=?, product_line=?, model=?,
+                software_version=?, software_version_other=?,
+                hardware_version=?, hardware_version_other=?,
+                subsystem=?, audience=?, priority=?,
+                lifecycle=?, confidentiality=?, keywords=?,
+                source=?, needs_review=?, updated_at=datetime('now')
             WHERE file_id=?
             """,
             (
-                row.get("doc_type", ""),
-                row.get("model_type", ""),
-                row.get("subsystem", ""),
-                row.get("language", ""),
-                row.get("hardware_version", ""),
-                row.get("software_version", ""),
-                row.get("priority", ""),
-                row.get("audience_level", ""),
+                data["doc_type"],
+                data["product_line"],
+                data["model"],
+                data["software_version"],
+                data["software_version_other"],
+                data["hardware_version"],
+                data["hardware_version_other"],
+                data["subsystem"],
+                data["audience"],
+                data["priority"],
+                data["lifecycle"],
+                data["confidentiality"],
+                data["keywords"],
                 "human",
                 0,
                 row["file_id"],
