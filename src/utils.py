@@ -24,10 +24,29 @@ def write_csv(path: str):
     if not rows:
         return
     Path(path).parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = list(rows[0].keys())
+
+    def _sanitize(value):
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value.replace("\x00", "").strip()
+        return value
+
+    clean_rows = [
+        {key: _sanitize(row.get(key)) for key in fieldnames}
+        for row in rows
+    ]
+
     with open(path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(
+            f,
+            fieldnames=fieldnames,
+            quoting=csv.QUOTE_ALL,
+            escapechar="\\",
+        )
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(clean_rows)
 
 
 def import_corrected_csv(path: str):
